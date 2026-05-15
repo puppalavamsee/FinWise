@@ -1,4 +1,63 @@
+import { useEffect, useState } from "react";
+
+import {
+  db,
+  collection,
+  addDoc,
+  onSnapshot
+} from "./db";
+
 export default function App() {
+
+  const [expenses, setExpenses] = useState([]);
+
+  const [title, setTitle] = useState("");
+  const [amount, setAmount] = useState("");
+  const [member, setMember] = useState("Vamsee");
+  const [category, setCategory] = useState("Food");
+
+  useEffect(() => {
+
+    const unsub = onSnapshot(
+      collection(db, "expenses"),
+      (snapshot) => {
+
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        setExpenses(data);
+      }
+    );
+
+    return () => unsub();
+
+  }, []);
+
+  const addExpense = async () => {
+
+    if (!title || !amount) return;
+
+    await addDoc(
+      collection(db, "expenses"),
+      {
+        title,
+        amount: Number(amount),
+        member,
+        category,
+        createdAt: new Date()
+      }
+    );
+
+    setTitle("");
+    setAmount("");
+  };
+
+  const total = expenses.reduce(
+    (sum, item) => sum + item.amount,
+    0
+  );
 
   return (
 
@@ -6,72 +65,132 @@ export default function App() {
       background: "#050816",
       minHeight: "100vh",
       color: "white",
-      padding: "30px",
+      padding: "25px",
       fontFamily: "Arial"
     }}>
 
       <h1 style={{
         color: "#7CFFB2",
-        fontSize: "48px",
-        marginBottom: "10px"
+        fontSize: "48px"
       }}>
         FinWise
       </h1>
 
       <p style={{
         color: "#9ca3af",
-        marginBottom: "30px"
+        marginBottom: "25px"
       }}>
-        AI Powered Family Finance Dashboard
+        AI Powered Family Finance
       </p>
 
       <div style={{
         background: "#111827",
+        padding: "25px",
         borderRadius: "25px",
-        padding: "30px",
         marginBottom: "25px"
       }}>
 
-        <h3>Total Balance</h3>
+        <h3>Total Expenses</h3>
 
         <h1 style={{
           color: "#7CFFB2",
           fontSize: "42px"
         }}>
-          ₹ 5,40,000
+          ₹ {total}
         </h1>
 
       </div>
 
       <div style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: "20px"
+        background: "#111827",
+        padding: "25px",
+        borderRadius: "25px",
+        marginBottom: "25px"
       }}>
 
-        <div style={{
-          background: "#111827",
-          borderRadius: "20px",
-          padding: "20px"
-        }}>
+        <h2>Add Expense</h2>
 
-          <h3>Expenses</h3>
+        <input
+          placeholder="Expense title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          style={inputStyle}
+        />
 
-          <h2>₹ 85,000</h2>
+        <input
+          placeholder="Amount"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          style={inputStyle}
+        />
 
-        </div>
+        <select
+          value={member}
+          onChange={(e) => setMember(e.target.value)}
+          style={inputStyle}
+        >
+          <option>Vamsee</option>
+          <option>Padmaja</option>
+        </select>
 
-        <div style={{
-          background: "#111827",
-          borderRadius: "20px",
-          padding: "20px"
-        }}>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          style={inputStyle}
+        >
+          <option>Food</option>
+          <option>Fuel</option>
+          <option>EMI</option>
+          <option>Shopping</option>
+          <option>Investment</option>
+        </select>
 
-          <h3>Investments</h3>
+        <button
+          onClick={addExpense}
+          style={{
+            background: "#7CFFB2",
+            color: "black",
+            border: "none",
+            padding: "15px",
+            borderRadius: "15px",
+            width: "100%",
+            fontSize: "18px",
+            marginTop: "15px",
+            cursor: "pointer"
+          }}
+        >
+          Add Expense
+        </button>
 
-          <h2>₹ 2,40,000</h2>
+      </div>
 
-        </div>
+      <div>
+
+        <h2>Expenses</h2>
+
+        {expenses.map(item => (
+
+          <div
+            key={item.id}
+            style={{
+              background: "#111827",
+              padding: "20px",
+              borderRadius: "20px",
+              marginBottom: "15px"
+            }}
+          >
+
+            <h3>{item.title}</h3>
+
+            <p>₹ {item.amount}</p>
+
+            <p>{item.member}</p>
+
+            <p>{item.category}</p>
+
+          </div>
+
+        ))}
 
       </div>
 
@@ -79,3 +198,14 @@ export default function App() {
 
   );
 }
+
+const inputStyle = {
+  width: "100%",
+  padding: "15px",
+  marginTop: "15px",
+  borderRadius: "15px",
+  border: "none",
+  background: "#1f2937",
+  color: "white",
+  fontSize: "16px"
+};
