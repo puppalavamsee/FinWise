@@ -42,24 +42,59 @@ const [investmentName, setInvestmentName] = useState("");
 const [investmentAmount, setInvestmentAmount] = useState("");
 const [investmentType, setInvestmentType] = useState("Mutual Fund");
 
-  useEffect(() => {
+ useEffect(() => {
 
-    const unsub = onSnapshot(
-      collection(db, "expenses"),
-      (snapshot) => {
+  const unsub = onSnapshot(
+    collection(db, "expenses"),
+    (snapshot) => {
 
-        const data = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
 
-        setExpenses(data);
-      }
-    );
+      setExpenses(data);
 
-    return () => unsub();
+    }
+  );
 
-  }, []);
+  const emiUnsub = onSnapshot(
+    collection(db, "emis"),
+    (snapshot) => {
+
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      setEmis(data);
+
+    }
+  );
+
+  const investmentUnsub = onSnapshot(
+    collection(db, "investments"),
+    (snapshot) => {
+
+      const data = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      setInvestments(data);
+
+    }
+  );
+
+  return () => {
+
+    unsub();
+    emiUnsub();
+    investmentUnsub();
+
+  };
+
+}, []);
 
   const addExpense = async () => {
 
@@ -82,38 +117,37 @@ const [investmentType, setInvestmentType] = useState("Mutual Fund");
     setActiveTab("home");
   };
 
-  const addEmi = () => {
+  const addEmi = async () => {
 
-    if (!emiName || !emiAmount || !emiDate) return;
+  if (!emiName || !emiAmount || !emiDate) return;
 
-    const newEmi = {
-      id: Date.now(),
+  await addDoc(
+    collection(db, "emis"),
+    {
       name: emiName,
       amount: emiAmount,
-      date: emiDate
-    };
+      date: emiDate,
+      createdAt: new Date()
+    }
+  );
 
-    setEmis([...emis, newEmi]);
-
-    setEmiName("");
-    setEmiAmount("");
-    setEmiDate("");
-  };
-const addInvestment = () => {
+  setEmiName("");
+  setEmiAmount("");
+  setEmiDate("");
+};
+const addInvestment = async () => {
 
   if (!investmentName || !investmentAmount) return;
 
-  const newInvestment = {
-    id: Date.now(),
-    name: investmentName,
-    amount: investmentAmount,
-    type: investmentType
-  };
-
-  setInvestments([
-    ...investments,
-    newInvestment
-  ]);
+  await addDoc(
+    collection(db, "investments"),
+    {
+      name: investmentName,
+      amount: investmentAmount,
+      type: investmentType,
+      createdAt: new Date()
+    }
+  );
 
   setInvestmentName("");
   setInvestmentAmount("");
