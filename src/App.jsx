@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 
 import {
@@ -35,9 +36,6 @@ export default function App() {
   const [amount, setAmount] = useState("");
   const [member, setMember] = useState("Vamsee");
   const [category, setCategory] = useState("Food");
-
-  const [isRecurring, setIsRecurring] = useState(false);
-  const [recurringExpenses, setRecurringExpenses] = useState([]);
 
   const [budgets, setBudgets] = useState([]);
   const [budgetCategory, setBudgetCategory] = useState("Food");
@@ -120,23 +118,6 @@ export default function App() {
       }
     );
 
-    if (isRecurring) {
-
-      const recurringItem = {
-        title,
-        amount: Number(amount),
-        member,
-        category,
-        recurring: true
-      };
-
-      setRecurringExpenses([
-        ...recurringExpenses,
-        recurringItem
-      ]);
-
-    }
-
     setTitle("");
     setAmount("");
 
@@ -148,15 +129,13 @@ export default function App() {
 
     if (!budgetAmount) return;
 
-    const newBudget = {
-      id: Date.now(),
-      category: budgetCategory,
-      amount: Number(budgetAmount)
-    };
-
     setBudgets([
       ...budgets,
-      newBudget
+      {
+        id: Date.now(),
+        category: budgetCategory,
+        amount: Number(budgetAmount)
+      }
     ]);
 
     setBudgetAmount("");
@@ -202,10 +181,88 @@ export default function App() {
 
   };
 
-  const total = expenses.reduce(
-    (sum, item) => sum + Number(item.amount),
-    0
-  );
+  const total =
+    expenses.reduce(
+      (sum, item) =>
+        sum + Number(item.amount),
+      0
+    );
+
+  const currentMonth =
+    new Date().getMonth();
+
+  const currentYear =
+    new Date().getFullYear();
+
+  const monthlyTotal =
+    expenses
+      .filter(item => {
+
+        if (!item.createdAt) return false;
+
+        const date =
+          item.createdAt?.seconds
+            ? new Date(
+                item.createdAt.seconds * 1000
+              )
+            : new Date();
+
+        return (
+          date.getMonth() === currentMonth &&
+          date.getFullYear() === currentYear
+        );
+
+      })
+      .reduce(
+        (sum, item) =>
+          sum + Number(item.amount),
+        0
+      );
+
+  const yearlyTotal =
+    expenses
+      .filter(item => {
+
+        if (!item.createdAt) return false;
+
+        const date =
+          item.createdAt?.seconds
+            ? new Date(
+                item.createdAt.seconds * 1000
+              )
+            : new Date();
+
+        return (
+          date.getFullYear() === currentYear
+        );
+
+      })
+      .reduce(
+        (sum, item) =>
+          sum + Number(item.amount),
+        0
+      );
+
+  const monthlyInvestment =
+    investments.reduce(
+      (sum, item) =>
+        sum + Number(item.amount),
+      0
+    );
+
+  const monthlyEmi =
+    emis.reduce(
+      (sum, item) =>
+        sum + Number(item.amount),
+      0
+    );
+
+  const financialScore =
+    total < 30000
+      ? 88
+      : total < 70000
+      ? 72
+      : 55;
 
   const grouped = {};
 
@@ -219,81 +276,11 @@ export default function App() {
 
   });
 
-  const categoryData = Object.keys(grouped).map(key => ({
-    name: key,
-    value: grouped[key]
-  }));
-
-  const highestCategory = categoryData.reduce(
-    (max, item) =>
-      item.value > (max?.value || 0)
-        ? item
-        : max,
-    null
-  );
-
-  const savingsSuggestion =
-    total > 50000
-      ? "Your spending is high this month. Reduce shopping and fuel expenses."
-      : "Excellent financial discipline this month.";
-
-  const financialHealth =
-    total < 30000
-      ? "Excellent"
-      : total < 70000
-      ? "Good"
-      : "Needs Attention";
-  const monthlyInvestment =
-  investments.reduce(
-    (sum, item) =>
-      sum + Number(item.amount),
-    0
-  );
-
-const monthlyEmi =
-  emis.reduce(
-    (sum, item) =>
-      sum + Number(item.amount),
-    0
-  );
-
-const estimatedSavings =
-  monthlyInvestment -
-  monthlyEmi -
-  total;
-
-const yearlyProjection =
-  estimatedSavings * 12;
-
-const fiveYearProjection =
-  yearlyProjection * 5;
-
-const projectedWealth =
-  monthlyInvestment * 12 * 5;
-
-const financialScore =
-  estimatedSavings > 0
-    ? 82
-    : 45;
-
-  const today = new Date();
-
-  const upcomingEmis = emis.filter(item => {
-
-    const emiDateObj = new Date(item.date);
-
-    const diffTime =
-      emiDateObj - today;
-
-    const diffDays =
-      Math.ceil(
-        diffTime /
-        (1000 * 60 * 60 * 24)
-      );
-
-    return diffDays <= 7;
-
-  });
+  const categoryData =
+    Object.keys(grouped).map(key => ({
+      name: key,
+      value: grouped[key]
+    }));
 
   const exportExcel = () => {
 
@@ -353,27 +340,28 @@ const financialScore =
   const COLORS = [
     "#7CFFB2",
     "#60A5FA",
-    "#F472B6",
     "#FBBF24",
+    "#F472B6",
     "#A78BFA"
   ];
 
   return (
 
     <div style={{
-      background: "#030712",
+      background:
+        "linear-gradient(180deg,#020617,#07111f)",
       minHeight: "100vh",
-      color: "white",
+      color: "#ffffff",
       paddingBottom: "120px",
-      fontFamily: "Arial",
       display: "flex",
-      justifyContent: "center"
+      justifyContent: "center",
+      fontFamily: "Arial"
     }}>
 
       <div style={{
-        padding: "25px",
         width: "100%",
-        maxWidth: "430px"
+        maxWidth: "430px",
+        padding: "24px"
       }}>
 
         <h1 style={{
@@ -384,9 +372,9 @@ const financialScore =
         </h1>
 
         <p style={{
-          color: "#9ca3af"
+          color: "#94A3B8"
         }}>
-          AI Powered Family Finance
+          Premium Family Finance
         </p>
 
         {/* HOME */}
@@ -395,20 +383,62 @@ const financialScore =
 
           <>
 
-            <div style={mainCard}>
+            <div style={heroCard}>
 
-              <p style={{
-                color: "#9ca3af"
-              }}>
-                Total Expenses
-              </p>
+              <p>Total Financial Overview</p>
 
               <h1 style={{
-                color: "#7CFFB2",
-                fontSize: "48px"
+                fontSize: "52px",
+                marginTop: "10px"
               }}>
                 ₹ {total}
               </h1>
+
+              <p style={{
+                marginTop: "12px"
+              }}>
+                Financial Score: {financialScore}/100
+              </p>
+
+            </div>
+
+            <div style={grid2}>
+
+              <div style={statCard}>
+                <p style={secondaryText}>
+                  Monthly Spend
+                </p>
+                <h2 style={greenText}>
+                  ₹ {monthlyTotal}
+                </h2>
+              </div>
+
+              <div style={statCard}>
+                <p style={secondaryText}>
+                  Annual Spend
+                </p>
+                <h2 style={blueText}>
+                  ₹ {yearlyTotal}
+                </h2>
+              </div>
+
+              <div style={statCard}>
+                <p style={secondaryText}>
+                  Investments
+                </p>
+                <h2 style={goldText}>
+                  ₹ {monthlyInvestment}
+                </h2>
+              </div>
+
+              <div style={statCard}>
+                <p style={secondaryText}>
+                  EMI Load
+                </p>
+                <h2 style={redText}>
+                  ₹ {monthlyEmi}
+                </h2>
+              </div>
 
             </div>
 
@@ -427,19 +457,17 @@ const financialScore =
 
                   <div>
 
-                    <h3>{item.title}</h3>
+                    <h3>
+                      {item.title}
+                    </h3>
 
-                    <p style={{
-                      color: "#9ca3af"
-                    }}>
+                    <p style={secondaryText}>
                       {item.member} • {item.category}
                     </p>
 
                   </div>
 
-                  <h2 style={{
-                    color: "#7CFFB2"
-                  }}>
+                  <h2 style={greenText}>
                     ₹ {item.amount}
                   </h2>
 
@@ -461,62 +489,64 @@ const financialScore =
             marginTop: "30px"
           }}>
 
-            <div style={mainCard}>
+            <div style={grid2}>
 
-              <h2>Analytics</h2>
+              <div style={statCard}>
+                <p style={secondaryText}>
+                  Monthly Spend
+                </p>
+                <h2 style={greenText}>
+                  ₹ {monthlyTotal}
+                </h2>
+              </div>
 
-              <div style={{
-                display: "flex",
-                gap: "15px",
-                marginTop: "20px"
-              }}>
-
-                <button
-                  onClick={exportExcel}
-                  style={exportBtnGreen}
-                >
-                  Export Excel
-                </button>
-
-                <button
-                  onClick={exportPDF}
-                  style={exportBtnBlue}
-                >
-                  Export PDF
-                </button>
-
+              <div style={statCard}>
+                <p style={secondaryText}>
+                  Annual Spend
+                </p>
+                <h2 style={blueText}>
+                  ₹ {yearlyTotal}
+                </h2>
               </div>
 
             </div>
 
-            <div style={{
-              background: "#111827",
-              borderRadius: "30px",
-              padding: "25px",
-              marginTop: "25px",
-              height: "350px"
-            }}>
+            <div style={chartCard}>
 
-              <ResponsiveContainer width="100%" height="100%">
+              <h2>
+                Expense Breakdown
+              </h2>
+
+              <ResponsiveContainer
+                width="100%"
+                height="90%"
+              >
 
                 <PieChart>
 
                   <Pie
                     data={categoryData}
                     dataKey="value"
-                    nameKey="name"
                     outerRadius={100}
+                    innerRadius={60}
                     label
                   >
 
-                    {categoryData.map((entry, index) => (
+                    {categoryData.map(
+                      (entry, index) => (
 
-                      <Cell
-                        key={index}
-                        fill={COLORS[index % COLORS.length]}
-                      />
+                        <Cell
+                          key={index}
+                          fill={
+                            COLORS[
+                              index %
+                              COLORS.length
+                            ]
+                          }
+                        />
 
-                    ))}
+                      )
+                    )}
 
                   </Pie>
 
@@ -528,180 +558,18 @@ const financialScore =
 
             </div>
 
-            <div style={{
-              background: "#111827",
-              borderRadius: "30px",
-              padding: "25px",
-              marginTop: "25px"
-            }}>
+            <div style={card}>
 
-              <h2 style={{
-                color: "#7CFFB2"
-              }}>
-                AI Insights
-              </h2>
-
-              <p style={{
-                marginTop: "15px"
-              }}>
-                Financial Health: {financialHealth}
-              </p>
-
-              <p style={{
-                marginTop: "10px"
-              }}>
-                Highest Spending: {highestCategory?.name || "No Data"}
-              </p>
-
-              <p style={{
-                marginTop: "10px",
-                color: "#7CFFB2"
-              }}>
-                {savingsSuggestion}
-              </p>
-
-            </div>
-            <div style={{
-  background: "#111827",
-  borderRadius: "30px",
-  padding: "25px",
-  marginTop: "25px"
-}}>
-
-  <h2 style={{
-    color: "#7CFFB2"
-  }}>
-    Wealth Forecasting
-  </h2>
-
-  <div style={{
-    marginTop: "20px"
-  }}>
-
-    <p style={{
-      color: "#9ca3af"
-    }}>
-      Estimated Monthly Savings
-    </p>
-
-    <h1 style={{
-      color: "#7CFFB2"
-    }}>
-      ₹ {estimatedSavings}
-    </h1>
-
-  </div>
-
-  <div style={{
-    marginTop: "20px"
-  }}>
-
-    <p style={{
-      color: "#9ca3af"
-    }}>
-      1 Year Wealth Projection
-    </p>
-
-    <h2>
-      ₹ {yearlyProjection}
-    </h2>
-
-  </div>
-
-  <div style={{
-    marginTop: "20px"
-  }}>
-
-    <p style={{
-      color: "#9ca3af"
-    }}>
-      5 Year Projection
-    </p>
-
-    <h2>
-      ₹ {fiveYearProjection}
-    </h2>
-
-  </div>
-
-  <div style={{
-    marginTop: "20px"
-  }}>
-
-    <p style={{
-      color: "#9ca3af"
-    }}>
-      Investment Growth Forecast
-    </p>
-
-    <h2 style={{
-      color: "#60A5FA"
-    }}>
-      ₹ {projectedWealth}
-    </h2>
-
-  </div>
-
-  <div style={{
-    marginTop: "25px"
-  }}>
-
-    <p style={{
-      color: "#9ca3af"
-    }}>
-      AI Financial Score
-    </p>
-
-    <div style={{
-      background: "#1f2937",
-      height: "14px",
-      borderRadius: "20px",
-      marginTop: "10px",
-      overflow: "hidden"
-    }}>
-
-      <div style={{
-        width: `${financialScore}%`,
-        height: "100%",
-        background:
-          financialScore > 70
-            ? "#7CFFB2"
-            : "#ef4444"
-      }} />
-
-    </div>
-
-    <h3 style={{
-      marginTop: "10px",
-      color:
-        financialScore > 70
-          ? "#7CFFB2"
-          : "#ef4444"
-    }}>
-      {financialScore}/100
-    </h3>
-
-  </div>
-
-</div>
-
-            <div style={{
-              background: "#111827",
-              borderRadius: "30px",
-              padding: "25px",
-              marginTop: "25px"
-            }}>
-
-              <h2 style={{
-                color: "#7CFFB2"
-              }}>
+              <h2>
                 Budget Planner
               </h2>
 
               <select
                 value={budgetCategory}
                 onChange={(e) =>
-                  setBudgetCategory(e.target.value)
+                  setBudgetCategory(
+                    e.target.value
+                  )
                 }
                 style={inputStyle}
               >
@@ -717,7 +585,9 @@ const financialScore =
                 type="number"
                 value={budgetAmount}
                 onChange={(e) =>
-                  setBudgetAmount(e.target.value)
+                  setBudgetAmount(
+                    e.target.value
+                  )
                 }
                 style={inputStyle}
               />
@@ -739,14 +609,11 @@ const financialScore =
 
         {activeTab === "add" && (
 
-          <div style={{
-            background: "#111827",
-            borderRadius: "30px",
-            padding: "25px",
-            marginTop: "25px"
-          }}>
+          <div style={card}>
 
-            <h2>Add Expense</h2>
+            <h2>
+              Add Expense
+            </h2>
 
             <input
               placeholder="Expense title"
@@ -792,27 +659,6 @@ const financialScore =
               <option>Investment</option>
             </select>
 
-            <div style={{
-              marginTop: "20px",
-              display: "flex",
-              alignItems: "center",
-              gap: "10px"
-            }}>
-
-              <input
-                type="checkbox"
-                checked={isRecurring}
-                onChange={() =>
-                  setIsRecurring(!isRecurring)
-                }
-              />
-
-              <label>
-                Monthly Recurring Expense
-              </label>
-
-            </div>
-
             <button
               onClick={addExpense}
               style={buttonStyle}
@@ -832,32 +678,11 @@ const financialScore =
             marginTop: "30px"
           }}>
 
-            <div style={mainCard}>
+            <div style={card}>
 
-              <h2>EMI Tracker</h2>
-
-              <h1 style={{
-                color: "#7CFFB2"
-              }}>
-                ₹ {
-                  emis.reduce(
-                    (sum, item) =>
-                      sum + Number(item.amount),
-                    0
-                  )
-                }
-              </h1>
-
-            </div>
-
-            <div style={{
-              background: "#111827",
-              borderRadius: "30px",
-              padding: "25px",
-              marginTop: "25px"
-            }}>
-
-              <h2>Add EMI</h2>
+              <h2>
+                EMI Tracker
+              </h2>
 
               <input
                 placeholder="EMI Name"
@@ -896,20 +721,19 @@ const financialScore =
 
             </div>
 
-            <div style={{
-              background: "#111827",
-              borderRadius: "30px",
-              padding: "25px",
-              marginTop: "25px"
-            }}>
+            <div style={card}>
 
-              <h2>Add Investment</h2>
+              <h2>
+                Investment Tracker
+              </h2>
 
               <input
                 placeholder="Investment Name"
                 value={investmentName}
                 onChange={(e) =>
-                  setInvestmentName(e.target.value)
+                  setInvestmentName(
+                    e.target.value
+                  )
                 }
                 style={inputStyle}
               />
@@ -919,7 +743,9 @@ const financialScore =
                 type="number"
                 value={investmentAmount}
                 onChange={(e) =>
-                  setInvestmentAmount(e.target.value)
+                  setInvestmentAmount(
+                    e.target.value
+                  )
                 }
                 style={inputStyle}
               />
@@ -927,7 +753,9 @@ const financialScore =
               <select
                 value={investmentType}
                 onChange={(e) =>
-                  setInvestmentType(e.target.value)
+                  setInvestmentType(
+                    e.target.value
+                  )
                 }
                 style={inputStyle}
               >
@@ -958,29 +786,53 @@ const financialScore =
 
         <FaHome
           size={24}
-          color={activeTab === "home" ? "#7CFFB2" : "white"}
-          onClick={() => setActiveTab("home")}
+          color={
+            activeTab === "home"
+              ? "#7CFFB2"
+              : "white"
+          }
+          onClick={() =>
+            setActiveTab("home")
+          }
           style={{ cursor: "pointer" }}
         />
 
         <FaChartPie
           size={24}
-          color={activeTab === "analytics" ? "#7CFFB2" : "white"}
-          onClick={() => setActiveTab("analytics")}
+          color={
+            activeTab === "analytics"
+              ? "#7CFFB2"
+              : "white"
+          }
+          onClick={() =>
+            setActiveTab("analytics")
+          }
           style={{ cursor: "pointer" }}
         />
 
         <FaPlusCircle
           size={42}
-          color={activeTab === "add" ? "#7CFFB2" : "white"}
-          onClick={() => setActiveTab("add")}
+          color={
+            activeTab === "add"
+              ? "#7CFFB2"
+              : "white"
+          }
+          onClick={() =>
+            setActiveTab("add")
+          }
           style={{ cursor: "pointer" }}
         />
 
         <FaWallet
           size={24}
-          color={activeTab === "wallet" ? "#7CFFB2" : "white"}
-          onClick={() => setActiveTab("wallet")}
+          color={
+            activeTab === "wallet"
+              ? "#7CFFB2"
+              : "white"
+          }
+          onClick={() =>
+            setActiveTab("wallet")
+          }
           style={{ cursor: "pointer" }}
         />
 
@@ -992,69 +844,113 @@ const financialScore =
 
 }
 
-const mainCard = {
-  background: "linear-gradient(135deg,#111827,#1f2937)",
-  borderRadius: "30px",
+const heroCard = {
+  background:
+    "linear-gradient(135deg,#7CFFB2,#60A5FA)",
+  borderRadius: "35px",
   padding: "30px",
   marginTop: "25px",
-  boxShadow: "0 0 30px rgba(124,255,178,0.15)"
+  color: "#020617"
+};
+
+const card = {
+  background:
+    "rgba(17,24,39,0.75)",
+  backdropFilter: "blur(18px)",
+  border:
+    "1px solid rgba(255,255,255,0.06)",
+  borderRadius: "30px",
+  padding: "28px",
+  marginTop: "25px"
+};
+
+const statCard = {
+  background:
+    "rgba(17,24,39,0.75)",
+  backdropFilter: "blur(18px)",
+  border:
+    "1px solid rgba(255,255,255,0.06)",
+  borderRadius: "28px",
+  padding: "22px"
 };
 
 const expenseCard = {
-  background: "#111827",
-  padding: "20px",
-  borderRadius: "25px",
-  marginTop: "15px",
+  background:
+    "rgba(17,24,39,0.78)",
+  border:
+    "1px solid rgba(255,255,255,0.04)",
+  padding: "22px",
+  borderRadius: "28px",
+  marginTop: "18px",
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center"
 };
 
+const chartCard = {
+  background:
+    "rgba(17,24,39,0.75)",
+  border:
+    "1px solid rgba(255,255,255,0.06)",
+  borderRadius: "30px",
+  padding: "28px",
+  marginTop: "25px",
+  height: "420px"
+};
+
+const grid2 = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: "16px",
+  marginTop: "25px"
+};
+
 const inputStyle = {
   width: "100%",
-  padding: "16px",
-  marginTop: "15px",
+  padding: "18px",
+  marginTop: "16px",
   borderRadius: "18px",
-  border: "none",
-  background: "#1f2937",
-  color: "white",
+  border:
+    "1px solid rgba(255,255,255,0.08)",
+  background:
+    "rgba(31,41,55,0.85)",
+  color: "#ffffff",
   fontSize: "16px",
   boxSizing: "border-box"
 };
 
 const buttonStyle = {
-  background: "#7CFFB2",
-  color: "black",
+  background:
+    "linear-gradient(135deg,#7CFFB2,#60A5FA)",
+  color: "#020617",
   border: "none",
-  padding: "16px",
-  borderRadius: "18px",
+  padding: "18px",
+  borderRadius: "20px",
   width: "100%",
-  fontSize: "18px",
-  marginTop: "20px",
+  fontSize: "17px",
+  marginTop: "22px",
   cursor: "pointer",
-  fontWeight: "bold"
+  fontWeight: "700"
 };
 
-const exportBtnGreen = {
-  flex: 1,
-  background: "#7CFFB2",
-  color: "black",
-  border: "none",
-  padding: "14px",
-  borderRadius: "15px",
-  fontWeight: "bold",
-  cursor: "pointer"
+const secondaryText = {
+  color: "#94A3B8"
 };
 
-const exportBtnBlue = {
-  flex: 1,
-  background: "#60A5FA",
-  color: "white",
-  border: "none",
-  padding: "14px",
-  borderRadius: "15px",
-  fontWeight: "bold",
-  cursor: "pointer"
+const greenText = {
+  color: "#7CFFB2"
+};
+
+const blueText = {
+  color: "#60A5FA"
+};
+
+const goldText = {
+  color: "#FBBF24"
+};
+
+const redText = {
+  color: "#F87171"
 };
 
 const bottomNav = {
@@ -1070,5 +966,27 @@ const bottomNav = {
   display: "flex",
   justifyContent: "space-around",
   alignItems: "center",
-  boxShadow: "0 0 20px rgba(0,0,0,0.5)"
+  boxShadow:
+    "0 0 20px rgba(0,0,0,0.5)"
+};
+const exportBtnGreen = {
+  flex: 1,
+  background: "#7CFFB2",
+  color: "#020617",
+  border: "none",
+  padding: "14px",
+  borderRadius: "15px",
+  fontWeight: "bold",
+  cursor: "pointer"
+};
+
+const exportBtnBlue = {
+  flex: 1,
+  background: "#60A5FA",
+  color: "#ffffff",
+  border: "none",
+  padding: "14px",
+  borderRadius: "15px",
+  fontWeight: "bold",
+  cursor: "pointer"
 };
