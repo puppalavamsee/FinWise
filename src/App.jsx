@@ -39,6 +39,13 @@ export default function App() {
   const [isRecurring, setIsRecurring] = useState(false);
 
 const [recurringExpenses, setRecurringExpenses] = useState([]);
+const [budgets, setBudgets] = useState([]);
+
+const [budgetCategory, setBudgetCategory] =
+  useState("Food");
+
+const [budgetAmount, setBudgetAmount] =
+  useState("");
 
   const [emis, setEmis] = useState([]);
   const [emiName, setEmiName] = useState("");
@@ -176,6 +183,23 @@ const addInvestment = async () => {
 
   setInvestmentName("");
   setInvestmentAmount("");
+};
+const addBudget = () => {
+
+  if (!budgetAmount) return;
+
+  const newBudget = {
+    id: Date.now(),
+    category: budgetCategory,
+    amount: Number(budgetAmount)
+  };
+
+  setBudgets([
+    ...budgets,
+    newBudget
+  ]);
+
+  setBudgetAmount("");
 };
   const total = expenses.reduce(
     (sum, item) => sum + item.amount,
@@ -568,6 +592,138 @@ const exportPDF = () => {
     </h3>
 
   </div>
+
+</div>
+<div style={{
+  background: "#111827",
+  borderRadius: "30px",
+  padding: "25px",
+  marginTop: "25px"
+}}>
+
+  <h2 style={{
+    color: "#7CFFB2"
+  }}>
+    Budget Planner
+  </h2>
+
+  <select
+    value={budgetCategory}
+    onChange={(e) =>
+      setBudgetCategory(e.target.value)
+    }
+    style={inputStyle}
+  >
+    <option>Food</option>
+    <option>Fuel</option>
+    <option>Shopping</option>
+    <option>Investment</option>
+    <option>EMI</option>
+  </select>
+
+  <input
+    placeholder="Monthly Budget"
+    type="number"
+    value={budgetAmount}
+    onChange={(e) =>
+      setBudgetAmount(e.target.value)
+    }
+    style={inputStyle}
+  />
+
+  <button
+    onClick={addBudget}
+    style={buttonStyle}
+  >
+    Add Budget
+  </button>
+
+</div>
+<div style={{
+  marginTop: "25px"
+}}>
+
+  <h2>Budget Tracking</h2>
+
+  {budgets.map(item => {
+
+    const spent = expenses
+      .filter(exp =>
+        exp.category === item.category
+      )
+      .reduce(
+        (sum, exp) =>
+          sum + exp.amount,
+        0
+      );
+
+    const percentage =
+      Math.min(
+        (spent / item.amount) * 100,
+        100
+      );
+
+    return (
+
+      <div
+        key={item.id}
+        style={{
+          background: "#111827",
+          padding: "20px",
+          borderRadius: "25px",
+          marginTop: "15px"
+        }}
+      >
+
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between"
+        }}>
+
+          <h3>{item.category}</h3>
+
+          <h3>
+            ₹ {spent} / ₹ {item.amount}
+          </h3>
+
+        </div>
+
+        {/* PROGRESS BAR */}
+
+        <div style={{
+          background: "#1f2937",
+          height: "12px",
+          borderRadius: "20px",
+          marginTop: "15px",
+          overflow: "hidden"
+        }}>
+
+          <div style={{
+            width: `${percentage}%`,
+            height: "100%",
+            background:
+              percentage > 80
+                ? "#ef4444"
+                : "#7CFFB2"
+          }} />
+
+        </div>
+
+        <p style={{
+          color:
+            percentage > 80
+              ? "#ef4444"
+              : "#9ca3af",
+          marginTop: "10px"
+        }}>
+          {percentage.toFixed(0)}% Used
+        </p>
+
+      </div>
+
+    );
+
+  })}
 
 </div>
 
