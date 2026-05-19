@@ -21,10 +21,9 @@ import {
   ResponsiveContainer,
   Tooltip
 } from "recharts";
+
 import * as XLSX from "xlsx";
-
 import jsPDF from "jspdf";
-
 import autoTable from "jspdf-autotable";
 
 export default function App() {
@@ -36,80 +35,75 @@ export default function App() {
   const [amount, setAmount] = useState("");
   const [member, setMember] = useState("Vamsee");
   const [category, setCategory] = useState("Food");
+
   const [isRecurring, setIsRecurring] = useState(false);
+  const [recurringExpenses, setRecurringExpenses] = useState([]);
 
-const [recurringExpenses, setRecurringExpenses] = useState([]);
-const [budgets, setBudgets] = useState([]);
-
-const [budgetCategory, setBudgetCategory] =
-  useState("Food");
-
-const [budgetAmount, setBudgetAmount] =
-  useState("");
+  const [budgets, setBudgets] = useState([]);
+  const [budgetCategory, setBudgetCategory] = useState("Food");
+  const [budgetAmount, setBudgetAmount] = useState("");
 
   const [emis, setEmis] = useState([]);
   const [emiName, setEmiName] = useState("");
   const [emiAmount, setEmiAmount] = useState("");
   const [emiDate, setEmiDate] = useState("");
+
   const [investments, setInvestments] = useState([]);
+  const [investmentName, setInvestmentName] = useState("");
+  const [investmentAmount, setInvestmentAmount] = useState("");
+  const [investmentType, setInvestmentType] = useState("Mutual Fund");
 
-const [investmentName, setInvestmentName] = useState("");
-const [investmentAmount, setInvestmentAmount] = useState("");
-const [investmentType, setInvestmentType] = useState("Mutual Fund");
+  useEffect(() => {
 
- useEffect(() => {
+    const unsub = onSnapshot(
+      collection(db, "expenses"),
+      (snapshot) => {
 
-  const unsub = onSnapshot(
-    collection(db, "expenses"),
-    (snapshot) => {
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
 
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+        setExpenses(data);
 
-      setExpenses(data);
+      }
+    );
 
-    }
-  );
+    const emiUnsub = onSnapshot(
+      collection(db, "emis"),
+      (snapshot) => {
 
-  const emiUnsub = onSnapshot(
-    collection(db, "emis"),
-    (snapshot) => {
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
 
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+        setEmis(data);
 
-      setEmis(data);
+      }
+    );
 
-    }
-  );
+    const investmentUnsub = onSnapshot(
+      collection(db, "investments"),
+      (snapshot) => {
 
-  const investmentUnsub = onSnapshot(
-    collection(db, "investments"),
-    (snapshot) => {
+        const data = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
 
-      const data = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+        setInvestments(data);
 
-      setInvestments(data);
+      }
+    );
 
-    }
-  );
+    return () => {
+      unsub();
+      emiUnsub();
+      investmentUnsub();
+    };
 
-  return () => {
-
-    unsub();
-    emiUnsub();
-    investmentUnsub();
-
-  };
-
-}, []);
+  }, []);
 
   const addExpense = async () => {
 
@@ -125,201 +119,205 @@ const [investmentType, setInvestmentType] = useState("Mutual Fund");
         createdAt: new Date()
       }
     );
+
     if (isRecurring) {
 
-  const recurringItem = {
-    title,
-    amount: Number(amount),
-    member,
-    category,
-    recurring: true,
-    createdAt: new Date()
-  };
+      const recurringItem = {
+        title,
+        amount: Number(amount),
+        member,
+        category,
+        recurring: true
+      };
 
-  setRecurringExpenses([
-    ...recurringExpenses,
-    recurringItem
-  ]);
+      setRecurringExpenses([
+        ...recurringExpenses,
+        recurringItem
+      ]);
 
-}
+    }
 
     setTitle("");
     setAmount("");
 
     setActiveTab("home");
+
+  };
+
+  const addBudget = () => {
+
+    if (!budgetAmount) return;
+
+    const newBudget = {
+      id: Date.now(),
+      category: budgetCategory,
+      amount: Number(budgetAmount)
+    };
+
+    setBudgets([
+      ...budgets,
+      newBudget
+    ]);
+
+    setBudgetAmount("");
+
   };
 
   const addEmi = async () => {
 
-  if (!emiName || !emiAmount || !emiDate) return;
+    if (!emiName || !emiAmount || !emiDate) return;
 
-  await addDoc(
-    collection(db, "emis"),
-    {
-      name: emiName,
-      amount: emiAmount,
-      date: emiDate,
-      createdAt: new Date()
-    }
-  );
+    await addDoc(
+      collection(db, "emis"),
+      {
+        name: emiName,
+        amount: Number(emiAmount),
+        date: emiDate,
+        createdAt: new Date()
+      }
+    );
 
-  setEmiName("");
-  setEmiAmount("");
-  setEmiDate("");
-};
-const addInvestment = async () => {
+    setEmiName("");
+    setEmiAmount("");
+    setEmiDate("");
 
-  if (!investmentName || !investmentAmount) return;
-
-  await addDoc(
-    collection(db, "investments"),
-    {
-      name: investmentName,
-      amount: investmentAmount,
-      type: investmentType,
-      createdAt: new Date()
-    }
-  );
-
-  setInvestmentName("");
-  setInvestmentAmount("");
-};
-const addBudget = () => {
-
-  if (!budgetAmount) return;
-
-  const newBudget = {
-    id: Date.now(),
-    category: budgetCategory,
-    amount: Number(budgetAmount)
   };
 
-  setBudgets([
-    ...budgets,
-    newBudget
-  ]);
+  const addInvestment = async () => {
 
-  setBudgetAmount("");
-};
+    if (!investmentName || !investmentAmount) return;
+
+    await addDoc(
+      collection(db, "investments"),
+      {
+        name: investmentName,
+        amount: Number(investmentAmount),
+        type: investmentType,
+        createdAt: new Date()
+      }
+    );
+
+    setInvestmentName("");
+    setInvestmentAmount("");
+
+  };
+
   const total = expenses.reduce(
-    (sum, item) => sum + item.amount,
+    (sum, item) => sum + Number(item.amount),
     0
   );
-
-  const categoryData = [];
 
   const grouped = {};
 
   expenses.forEach(item => {
 
     if (grouped[item.category]) {
-      grouped[item.category] += item.amount;
+      grouped[item.category] += Number(item.amount);
     } else {
-      grouped[item.category] = item.amount;
+      grouped[item.category] = Number(item.amount);
     }
 
   });
 
-  for (const key in grouped) {
+  const categoryData = Object.keys(grouped).map(key => ({
+    name: key,
+    value: grouped[key]
+  }));
 
-    categoryData.push({
-      name: key,
-      value: grouped[key]
-    });
-
-  }
-const highestCategory = categoryData.reduce(
-  (max, item) =>
-    item.value > (max?.value || 0)
-      ? item
-      : max,
-  null
-);
-
-const savingsSuggestion =
-  total > 50000
-    ? "Your spending is high this month. Try reducing shopping and fuel expenses."
-    : "Great job! Your spending is under control.";
-
-const financialHealth =
-  total < 30000
-    ? "Excellent"
-    : total < 70000
-    ? "Good"
-    : "Needs Attention";
-    const today = new Date();
-
-const upcomingEmis = emis.filter(item => {
-
-  const emiDateObj = new Date(item.date);
-
-  const diffTime =
-    emiDateObj - today;
-
-  const diffDays =
-    Math.ceil(
-      diffTime /
-      (1000 * 60 * 60 * 24)
-    );
-
-  return diffDays <= 7;
-
-});
-const exportExcel = () => {
-
-  const worksheet = XLSX.utils.json_to_sheet(
-    expenses
+  const highestCategory = categoryData.reduce(
+    (max, item) =>
+      item.value > (max?.value || 0)
+        ? item
+        : max,
+    null
   );
 
-  const workbook =
-    XLSX.utils.book_new();
+  const savingsSuggestion =
+    total > 50000
+      ? "Your spending is high this month. Reduce shopping and fuel expenses."
+      : "Excellent financial discipline this month.";
 
-  XLSX.utils.book_append_sheet(
-    workbook,
-    worksheet,
-    "Expenses"
-  );
+  const financialHealth =
+    total < 30000
+      ? "Excellent"
+      : total < 70000
+      ? "Good"
+      : "Needs Attention";
 
-  XLSX.writeFile(
-    workbook,
-    "FinWise_Expenses.xlsx"
-  );
+  const today = new Date();
 
-};
+  const upcomingEmis = emis.filter(item => {
 
-const exportPDF = () => {
+    const emiDateObj = new Date(item.date);
 
-  const doc = new jsPDF();
+    const diffTime =
+      emiDateObj - today;
 
-  doc.text(
-    "FinWise Expense Report",
-    14,
-    15
-  );
+    const diffDays =
+      Math.ceil(
+        diffTime /
+        (1000 * 60 * 60 * 24)
+      );
 
-  autoTable(doc, {
-
-    head: [[
-      "Title",
-      "Amount",
-      "Member",
-      "Category"
-    ]],
-
-    body: expenses.map(item => ([
-      item.title,
-      item.amount,
-      item.member,
-      item.category
-    ]))
+    return diffDays <= 7;
 
   });
 
-  doc.save(
-    "FinWise_Report.pdf"
-  );
+  const exportExcel = () => {
 
-};
+    const worksheet =
+      XLSX.utils.json_to_sheet(expenses);
+
+    const workbook =
+      XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(
+      workbook,
+      worksheet,
+      "Expenses"
+    );
+
+    XLSX.writeFile(
+      workbook,
+      "FinWise_Expenses.xlsx"
+    );
+
+  };
+
+  const exportPDF = () => {
+
+    const doc = new jsPDF();
+
+    doc.text(
+      "FinWise Expense Report",
+      14,
+      15
+    );
+
+    autoTable(doc, {
+
+      head: [[
+        "Title",
+        "Amount",
+        "Member",
+        "Category"
+      ]],
+
+      body: expenses.map(item => ([
+        item.title,
+        item.amount,
+        item.member,
+        item.category
+      ]))
+
+    });
+
+    doc.save(
+      "FinWise_Report.pdf"
+    );
+
+  };
+
   const COLORS = [
     "#7CFFB2",
     "#60A5FA",
@@ -434,58 +432,28 @@ const exportPDF = () => {
             <div style={mainCard}>
 
               <h2>Analytics</h2>
+
               <div style={{
-  display: "flex",
-  gap: "15px",
-  marginTop: "20px"
-}}>
-
-  <button
-    onClick={exportExcel}
-    style={{
-      flex: 1,
-      background: "#7CFFB2",
-      color: "black",
-      border: "none",
-      padding: "14px",
-      borderRadius: "15px",
-      fontWeight: "bold",
-      cursor: "pointer"
-    }}
-  >
-    Export Excel
-  </button>
-
-  <button
-    onClick={exportPDF}
-    style={{
-      flex: 1,
-      background: "#60A5FA",
-      color: "white",
-      border: "none",
-      padding: "14px",
-      borderRadius: "15px",
-      fontWeight: "bold",
-      cursor: "pointer"
-    }}
-  >
-    Export PDF
-  </button>
-
-</div>
-
-              <p style={{
-                color: "#9ca3af",
-                marginTop: "15px"
+                display: "flex",
+                gap: "15px",
+                marginTop: "20px"
               }}>
-                Total Spending
-              </p>
 
-              <h1 style={{
-                color: "#7CFFB2"
-              }}>
-                ₹ {total}
-              </h1>
+                <button
+                  onClick={exportExcel}
+                  style={exportBtnGreen}
+                >
+                  Export Excel
+                </button>
+
+                <button
+                  onClick={exportPDF}
+                  style={exportBtnBlue}
+                >
+                  Export PDF
+                </button>
+
+              </div>
 
             </div>
 
@@ -497,9 +465,7 @@ const exportPDF = () => {
               height: "350px"
             }}>
 
-              <h3>Category Breakdown</h3>
-
-              <ResponsiveContainer width="100%" height="85%">
+              <ResponsiveContainer width="100%" height="100%">
 
                 <PieChart>
 
@@ -529,203 +495,86 @@ const exportPDF = () => {
               </ResponsiveContainer>
 
             </div>
+
             <div style={{
-  background: "#111827",
-  borderRadius: "30px",
-  padding: "25px",
-  marginTop: "25px"
-}}>
+              background: "#111827",
+              borderRadius: "30px",
+              padding: "25px",
+              marginTop: "25px"
+            }}>
 
-  <h2 style={{
-    color: "#7CFFB2",
-    marginBottom: "20px"
-  }}>
-    AI Insights
-  </h2>
+              <h2 style={{
+                color: "#7CFFB2"
+              }}>
+                AI Insights
+              </h2>
 
-  <div style={{
-    marginBottom: "20px"
-  }}>
+              <p style={{
+                marginTop: "15px"
+              }}>
+                Financial Health: {financialHealth}
+              </p>
 
-    <p style={{
-      color: "#9ca3af"
-    }}>
-      Financial Health
-    </p>
+              <p style={{
+                marginTop: "10px"
+              }}>
+                Highest Spending: {highestCategory?.name || "No Data"}
+              </p>
 
-    <h2>
-      {financialHealth}
-    </h2>
+              <p style={{
+                marginTop: "10px",
+                color: "#7CFFB2"
+              }}>
+                {savingsSuggestion}
+              </p>
 
-  </div>
+            </div>
 
-  <div style={{
-    marginBottom: "20px"
-  }}>
+            <div style={{
+              background: "#111827",
+              borderRadius: "30px",
+              padding: "25px",
+              marginTop: "25px"
+            }}>
 
-    <p style={{
-      color: "#9ca3af"
-    }}>
-      Highest Spending Category
-    </p>
+              <h2 style={{
+                color: "#7CFFB2"
+              }}>
+                Budget Planner
+              </h2>
 
-    <h2>
-      {highestCategory?.name || "No Data"}
-    </h2>
+              <select
+                value={budgetCategory}
+                onChange={(e) =>
+                  setBudgetCategory(e.target.value)
+                }
+                style={inputStyle}
+              >
+                <option>Food</option>
+                <option>Fuel</option>
+                <option>Shopping</option>
+                <option>Investment</option>
+                <option>EMI</option>
+              </select>
 
-  </div>
+              <input
+                placeholder="Monthly Budget"
+                type="number"
+                value={budgetAmount}
+                onChange={(e) =>
+                  setBudgetAmount(e.target.value)
+                }
+                style={inputStyle}
+              />
 
-  <div>
+              <button
+                onClick={addBudget}
+                style={buttonStyle}
+              >
+                Add Budget
+              </button>
 
-    <p style={{
-      color: "#9ca3af"
-    }}>
-      Smart Recommendation
-    </p>
-
-    <h3 style={{
-      color: "#7CFFB2",
-      marginTop: "10px",
-      lineHeight: "1.5"
-    }}>
-      {savingsSuggestion}
-    </h3>
-
-  </div>
-
-</div>
-<div style={{
-  background: "#111827",
-  borderRadius: "30px",
-  padding: "25px",
-  marginTop: "25px"
-}}>
-
-  <h2 style={{
-    color: "#7CFFB2"
-  }}>
-    Budget Planner
-  </h2>
-
-  <select
-    value={budgetCategory}
-    onChange={(e) =>
-      setBudgetCategory(e.target.value)
-    }
-    style={inputStyle}
-  >
-    <option>Food</option>
-    <option>Fuel</option>
-    <option>Shopping</option>
-    <option>Investment</option>
-    <option>EMI</option>
-  </select>
-
-  <input
-    placeholder="Monthly Budget"
-    type="number"
-    value={budgetAmount}
-    onChange={(e) =>
-      setBudgetAmount(e.target.value)
-    }
-    style={inputStyle}
-  />
-
-  <button
-    onClick={addBudget}
-    style={buttonStyle}
-  >
-    Add Budget
-  </button>
-
-</div>
-<div style={{
-  marginTop: "25px"
-}}>
-
-  <h2>Budget Tracking</h2>
-
-  {budgets.map(item => {
-
-    const spent = expenses
-      .filter(exp =>
-        exp.category === item.category
-      )
-      .reduce(
-        (sum, exp) =>
-          sum + exp.amount,
-        0
-      );
-
-    const percentage =
-      Math.min(
-        (spent / item.amount) * 100,
-        100
-      );
-
-    return (
-
-      <div
-        key={item.id}
-        style={{
-          background: "#111827",
-          padding: "20px",
-          borderRadius: "25px",
-          marginTop: "15px"
-        }}
-      >
-
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between"
-        }}>
-
-          <h3>{item.category}</h3>
-
-          <h3>
-            ₹ {spent} / ₹ {item.amount}
-          </h3>
-
-        </div>
-
-        {/* PROGRESS BAR */}
-
-        <div style={{
-          background: "#1f2937",
-          height: "12px",
-          borderRadius: "20px",
-          marginTop: "15px",
-          overflow: "hidden"
-        }}>
-
-          <div style={{
-            width: `${percentage}%`,
-            height: "100%",
-            background:
-              percentage > 80
-                ? "#ef4444"
-                : "#7CFFB2"
-          }} />
-
-        </div>
-
-        <p style={{
-          color:
-            percentage > 80
-              ? "#ef4444"
-              : "#9ca3af",
-          marginTop: "10px"
-        }}>
-          {percentage.toFixed(0)}% Used
-        </p>
-
-      </div>
-
-    );
-
-  })}
-
-</div>
+            </div>
 
           </div>
 
@@ -747,7 +596,9 @@ const exportPDF = () => {
             <input
               placeholder="Expense title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) =>
+                setTitle(e.target.value)
+              }
               style={inputStyle}
             />
 
@@ -755,13 +606,17 @@ const exportPDF = () => {
               placeholder="Amount"
               type="number"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) =>
+                setAmount(e.target.value)
+              }
               style={inputStyle}
             />
 
             <select
               value={member}
-              onChange={(e) => setMember(e.target.value)}
+              onChange={(e) =>
+                setMember(e.target.value)
+              }
               style={inputStyle}
             >
               <option>Vamsee</option>
@@ -770,7 +625,9 @@ const exportPDF = () => {
 
             <select
               value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              onChange={(e) =>
+                setCategory(e.target.value)
+              }
               style={inputStyle}
             >
               <option>Food</option>
@@ -780,6 +637,27 @@ const exportPDF = () => {
               <option>Investment</option>
             </select>
 
+            <div style={{
+              marginTop: "20px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px"
+            }}>
+
+              <input
+                type="checkbox"
+                checked={isRecurring}
+                onChange={() =>
+                  setIsRecurring(!isRecurring)
+                }
+              />
+
+              <label>
+                Monthly Recurring Expense
+              </label>
+
+            </div>
+
             <button
               onClick={addExpense}
               style={buttonStyle}
@@ -788,31 +666,10 @@ const exportPDF = () => {
             </button>
 
           </div>
-          
 
         )}
-        <div style={{
-  marginTop: "20px",
-  display: "flex",
-  alignItems: "center",
-  gap: "10px"
-}}>
 
-  <input
-    type="checkbox"
-    checked={isRecurring}
-    onChange={() =>
-      setIsRecurring(!isRecurring)
-    }
-  />
-
-  <label>
-    Monthly Recurring Expense
-  </label>
-
-</div>
-
-        {/* EMI */}
+        {/* WALLET */}
 
         {activeTab === "wallet" && (
 
@@ -823,13 +680,6 @@ const exportPDF = () => {
             <div style={mainCard}>
 
               <h2>EMI Tracker</h2>
-
-              <p style={{
-                color: "#9ca3af",
-                marginTop: "15px"
-              }}>
-                Total Monthly EMI
-              </p>
 
               <h1 style={{
                 color: "#7CFFB2"
@@ -844,67 +694,6 @@ const exportPDF = () => {
               </h1>
 
             </div>
-            <div style={{
-  background: "#111827",
-  borderRadius: "30px",
-  padding: "25px",
-  marginTop: "25px"
-}}>
-
-  <h2 style={{
-    color: "#FBBF24",
-    marginBottom: "20px"
-  }}>
-    Upcoming Reminders
-  </h2>
-
-  {upcomingEmis.length === 0 ? (
-
-    <p style={{
-      color: "#9ca3af"
-    }}>
-      No upcoming EMI reminders.
-    </p>
-
-  ) : (
-
-    upcomingEmis.map(item => (
-
-      <div
-        key={item.id}
-        style={{
-          background: "#1f2937",
-          borderRadius: "20px",
-          padding: "18px",
-          marginTop: "15px"
-        }}
-      >
-
-        <h3>
-          {item.name}
-        </h3>
-
-        <p style={{
-          color: "#9ca3af",
-          marginTop: "8px"
-        }}>
-          Due on {item.date}
-        </p>
-
-        <h2 style={{
-          color: "#FBBF24",
-          marginTop: "10px"
-        }}>
-          ₹ {item.amount}
-        </h2>
-
-      </div>
-
-    ))
-
-  )}
-
-</div>
 
             <div style={{
               background: "#111827",
@@ -918,7 +707,9 @@ const exportPDF = () => {
               <input
                 placeholder="EMI Name"
                 value={emiName}
-                onChange={(e) => setEmiName(e.target.value)}
+                onChange={(e) =>
+                  setEmiName(e.target.value)
+                }
                 style={inputStyle}
               />
 
@@ -926,14 +717,18 @@ const exportPDF = () => {
                 placeholder="EMI Amount"
                 type="number"
                 value={emiAmount}
-                onChange={(e) => setEmiAmount(e.target.value)}
+                onChange={(e) =>
+                  setEmiAmount(e.target.value)
+                }
                 style={inputStyle}
               />
 
               <input
                 type="date"
                 value={emiDate}
-                onChange={(e) => setEmiDate(e.target.value)}
+                onChange={(e) =>
+                  setEmiDate(e.target.value)
+                }
                 style={inputStyle}
               />
 
@@ -946,206 +741,59 @@ const exportPDF = () => {
 
             </div>
 
+            <div style={{
+              background: "#111827",
+              borderRadius: "30px",
+              padding: "25px",
+              marginTop: "25px"
+            }}>
+
+              <h2>Add Investment</h2>
+
+              <input
+                placeholder="Investment Name"
+                value={investmentName}
+                onChange={(e) =>
+                  setInvestmentName(e.target.value)
+                }
+                style={inputStyle}
+              />
+
+              <input
+                placeholder="Investment Amount"
+                type="number"
+                value={investmentAmount}
+                onChange={(e) =>
+                  setInvestmentAmount(e.target.value)
+                }
+                style={inputStyle}
+              />
+
+              <select
+                value={investmentType}
+                onChange={(e) =>
+                  setInvestmentType(e.target.value)
+                }
+                style={inputStyle}
+              >
+                <option>Mutual Fund</option>
+                <option>Stocks</option>
+                <option>Gold</option>
+                <option>Crypto</option>
+              </select>
+
+              <button
+                onClick={addInvestment}
+                style={buttonStyle}
+              >
+                Add Investment
+              </button>
+
+            </div>
+
           </div>
 
         )}
-        {/* INVESTMENTS */}
-
-<div style={{
-  marginTop: "30px"
-}}>
-
-  <div style={mainCard}>
-
-    <h2>Investment Portfolio</h2>
-
-    <p style={{
-      color: "#9ca3af",
-      marginTop: "15px"
-    }}>
-      Total Investments
-    </p>
-
-    <h1 style={{
-      color: "#7CFFB2"
-    }}>
-      ₹ {
-        investments.reduce(
-          (sum, item) =>
-            sum + Number(item.amount),
-          0
-        )
-      }
-    </h1>
-
-  </div>
-
-  {/* ADD INVESTMENT */}
-
-  <div style={{
-    background: "#111827",
-    borderRadius: "30px",
-    padding: "25px",
-    marginTop: "25px"
-  }}>
-
-    <h2>Add Investment</h2>
-
-    <input
-      placeholder="Investment Name"
-      value={investmentName}
-      onChange={(e) =>
-        setInvestmentName(e.target.value)
-      }
-      style={inputStyle}
-    />
-
-    <input
-      placeholder="Investment Amount"
-      type="number"
-      value={investmentAmount}
-      onChange={(e) =>
-        setInvestmentAmount(e.target.value)
-      }
-      style={inputStyle}
-    />
-
-    <select
-      value={investmentType}
-      onChange={(e) =>
-        setInvestmentType(e.target.value)
-      }
-      style={inputStyle}
-    >
-      <option>Mutual Fund</option>
-      <option>Stocks</option>
-      <option>Gold</option>
-      <option>Crypto</option>
-      <option>SIP</option>
-    </select>
-
-    <button
-      onClick={addInvestment}
-      style={buttonStyle}
-    >
-      Add Investment
-    </button>
-
-  </div>
-
-  {/* INVESTMENT LIST */}
-
-  <div style={{
-    marginTop: "25px"
-  }}>
-
-    <h2>Portfolio</h2>
-
-    {investments.map(item => (
-
-      <div
-        key={item.id}
-        style={{
-          background: "#111827",
-          padding: "20px",
-          borderRadius: "25px",
-          marginTop: "15px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}
-      >
-
-        <div>
-
-          <h3>{item.name}</h3>
-
-          <p style={{
-            color: "#9ca3af"
-          }}>
-            {item.type}
-          </p>
-
-        </div>
-
-        <h2 style={{
-          color: "#7CFFB2"
-        }}>
-          ₹ {item.amount}
-        </h2>
-
-      </div>
-
-    ))}
-
-  </div>
-
-</div>
-<div style={{
-  marginTop: "30px"
-}}>
-
-  <div style={mainCard}>
-
-    <h2>Recurring Transactions</h2>
-
-    <p style={{
-      color: "#9ca3af",
-      marginTop: "10px"
-    }}>
-      Automatic Monthly Entries
-    </p>
-
-  </div>
-
-  {recurringExpenses.map((item, index) => (
-
-    <div
-      key={index}
-      style={{
-        background: "#111827",
-        padding: "20px",
-        borderRadius: "25px",
-        marginTop: "15px",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center"
-      }}
-    >
-
-      <div>
-
-        <h3>{item.title}</h3>
-
-        <p style={{
-          color: "#9ca3af"
-        }}>
-          {item.category}
-        </p>
-
-      </div>
-
-      <div>
-
-        <h2 style={{
-          color: "#7CFFB2"
-        }}>
-          ₹ {item.amount}
-        </h2>
-
-        <p style={{
-          color: "#60A5FA"
-        }}>
-          Monthly
-        </p>
-
-      </div>
-
-    </div>
-
-  ))}
-
-</div>
 
       </div>
 
@@ -1186,6 +834,7 @@ const exportPDF = () => {
     </div>
 
   );
+
 }
 
 const mainCard = {
@@ -1229,6 +878,28 @@ const buttonStyle = {
   marginTop: "20px",
   cursor: "pointer",
   fontWeight: "bold"
+};
+
+const exportBtnGreen = {
+  flex: 1,
+  background: "#7CFFB2",
+  color: "black",
+  border: "none",
+  padding: "14px",
+  borderRadius: "15px",
+  fontWeight: "bold",
+  cursor: "pointer"
+};
+
+const exportBtnBlue = {
+  flex: 1,
+  background: "#60A5FA",
+  color: "white",
+  border: "none",
+  padding: "14px",
+  borderRadius: "15px",
+  fontWeight: "bold",
+  cursor: "pointer"
 };
 
 const bottomNav = {
