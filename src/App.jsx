@@ -145,7 +145,25 @@ const addInvestment = () => {
     });
 
   }
+const highestCategory = categoryData.reduce(
+  (max, item) =>
+    item.value > (max?.value || 0)
+      ? item
+      : max,
+  null
+);
 
+const savingsSuggestion =
+  total > 50000
+    ? "Your spending is high this month. Try reducing shopping and fuel expenses."
+    : "Great job! Your spending is under control.";
+
+const financialHealth =
+  total < 30000
+    ? "Excellent"
+    : total < 70000
+    ? "Good"
+    : "Needs Attention";
   const COLORS = [
     "#7CFFB2",
     "#60A5FA",
@@ -316,6 +334,71 @@ const addInvestment = () => {
               </ResponsiveContainer>
 
             </div>
+            <div style={{
+  background: "#111827",
+  borderRadius: "30px",
+  padding: "25px",
+  marginTop: "25px"
+}}>
+
+  <h2 style={{
+    color: "#7CFFB2",
+    marginBottom: "20px"
+  }}>
+    AI Insights
+  </h2>
+
+  <div style={{
+    marginBottom: "20px"
+  }}>
+
+    <p style={{
+      color: "#9ca3af"
+    }}>
+      Financial Health
+    </p>
+
+    <h2>
+      {financialHealth}
+    </h2>
+
+  </div>
+
+  <div style={{
+    marginBottom: "20px"
+  }}>
+
+    <p style={{
+      color: "#9ca3af"
+    }}>
+      Highest Spending Category
+    </p>
+
+    <h2>
+      {highestCategory?.name || "No Data"}
+    </h2>
+
+  </div>
+
+  <div>
+
+    <p style={{
+      color: "#9ca3af"
+    }}>
+      Smart Recommendation
+    </p>
+
+    <h3 style={{
+      color: "#7CFFB2",
+      marginTop: "10px",
+      lineHeight: "1.5"
+    }}>
+      {savingsSuggestion}
+    </h3>
+
+  </div>
+
+</div>
 
           </div>
 
