@@ -21,6 +21,11 @@ import {
   ResponsiveContainer,
   Tooltip
 } from "recharts";
+import * as XLSX from "xlsx";
+
+import jsPDF from "jspdf";
+
+import autoTable from "jspdf-autotable";
 
 export default function App() {
 
@@ -216,6 +221,61 @@ const upcomingEmis = emis.filter(item => {
   return diffDays <= 7;
 
 });
+const exportExcel = () => {
+
+  const worksheet = XLSX.utils.json_to_sheet(
+    expenses
+  );
+
+  const workbook =
+    XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Expenses"
+  );
+
+  XLSX.writeFile(
+    workbook,
+    "FinWise_Expenses.xlsx"
+  );
+
+};
+
+const exportPDF = () => {
+
+  const doc = new jsPDF();
+
+  doc.text(
+    "FinWise Expense Report",
+    14,
+    15
+  );
+
+  autoTable(doc, {
+
+    head: [[
+      "Title",
+      "Amount",
+      "Member",
+      "Category"
+    ]],
+
+    body: expenses.map(item => ([
+      item.title,
+      item.amount,
+      item.member,
+      item.category
+    ]))
+
+  });
+
+  doc.save(
+    "FinWise_Report.pdf"
+  );
+
+};
   const COLORS = [
     "#7CFFB2",
     "#60A5FA",
@@ -330,6 +390,45 @@ const upcomingEmis = emis.filter(item => {
             <div style={mainCard}>
 
               <h2>Analytics</h2>
+              <div style={{
+  display: "flex",
+  gap: "15px",
+  marginTop: "20px"
+}}>
+
+  <button
+    onClick={exportExcel}
+    style={{
+      flex: 1,
+      background: "#7CFFB2",
+      color: "black",
+      border: "none",
+      padding: "14px",
+      borderRadius: "15px",
+      fontWeight: "bold",
+      cursor: "pointer"
+    }}
+  >
+    Export Excel
+  </button>
+
+  <button
+    onClick={exportPDF}
+    style={{
+      flex: 1,
+      background: "#60A5FA",
+      color: "white",
+      border: "none",
+      padding: "14px",
+      borderRadius: "15px",
+      fontWeight: "bold",
+      cursor: "pointer"
+    }}
+  >
+    Export PDF
+  </button>
+
+</div>
 
               <p style={{
                 color: "#9ca3af",
