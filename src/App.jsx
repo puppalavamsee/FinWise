@@ -13,6 +13,13 @@ import {
   FaWallet,
   FaPlusCircle
 } from "react-icons/fa";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Tooltip
+} from "recharts";
 
 export default function App() {
 
@@ -68,6 +75,36 @@ export default function App() {
     (sum, item) => sum + item.amount,
     0
   );
+  const categoryData = [];
+
+const grouped = {};
+
+expenses.forEach(item => {
+
+  if (grouped[item.category]) {
+    grouped[item.category] += item.amount;
+  } else {
+    grouped[item.category] = item.amount;
+  }
+
+});
+
+for (const key in grouped) {
+
+  categoryData.push({
+    name: key,
+    value: grouped[key]
+  });
+
+}
+
+const COLORS = [
+  "#7CFFB2",
+  "#60A5FA",
+  "#F472B6",
+  "#FBBF24",
+  "#A78BFA"
+];
 
   return (
 
@@ -188,131 +225,89 @@ export default function App() {
 
         {activeTab === "analytics" && (
 
-          <div style={{
-            marginTop: "30px"
-          }}>
+  <div style={{
+    marginTop: "30px"
+  }}>
 
-            <div style={mainCard}>
+    <div style={mainCard}>
 
-              <h2>Analytics</h2>
+      <h2>Analytics</h2>
 
-              <p style={{
-                color: "#9ca3af",
-                marginTop: "20px"
-              }}>
-                Monthly Spending
-              </p>
+      <p style={{
+        color: "#9ca3af",
+        marginTop: "15px"
+      }}>
+        Total Spending
+      </p>
 
-              <h1 style={{
-                color: "#7CFFB2"
-              }}>
-                ₹ {total}
-              </h1>
+      <h1 style={{
+        color: "#7CFFB2"
+      }}>
+        ₹ {total}
+      </h1>
 
-            </div>
+    </div>
 
-            <div style={smallCard}>
-              <h3>Top Category</h3>
-              <h2>Investment</h2>
-            </div>
+    <div style={{
+      background: "#111827",
+      borderRadius: "30px",
+      padding: "25px",
+      marginTop: "25px",
+      height: "350px"
+    }}>
 
-          </div>
+      <h3 style={{
+        marginBottom: "20px"
+      }}>
+        Category Breakdown
+      </h3>
 
-        )}
+      <ResponsiveContainer width="100%" height="85%">
 
-        {/* ADD SCREEN */}
+        <PieChart>
 
-        {activeTab === "add" && (
+          <Pie
+            data={categoryData}
+            dataKey="value"
+            nameKey="name"
+            outerRadius={100}
+            label
+          >
 
-          <div style={{
-            background: "#111827",
-            borderRadius: "30px",
-            padding: "25px",
-            marginTop: "25px"
-          }}>
+            {categoryData.map((entry, index) => (
 
-            <h2>Add Expense</h2>
+              <Cell
+                key={index}
+                fill={COLORS[index % COLORS.length]}
+              />
 
-            <input
-              placeholder="Expense title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              style={inputStyle}
-            />
+            ))}
 
-            <input
-              placeholder="Amount"
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              style={inputStyle}
-            />
+          </Pie>
 
-            <select
-              value={member}
-              onChange={(e) => setMember(e.target.value)}
-              style={inputStyle}
-            >
-              <option>Vamsee</option>
-              <option>Padmaja</option>
-            </select>
+          <Tooltip />
 
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              style={inputStyle}
-            >
-              <option>Food</option>
-              <option>Fuel</option>
-              <option>EMI</option>
-              <option>Shopping</option>
-              <option>Investment</option>
-            </select>
+        </PieChart>
 
-            <button
-              onClick={addExpense}
-              style={buttonStyle}
-            >
-              Add Expense
-            </button>
+      </ResponsiveContainer>
 
-          </div>
+    </div>
 
-        )}
+    <div style={smallCard}>
 
-        {/* WALLET SCREEN */}
+      <h3>Top Spending Category</h3>
 
-        {activeTab === "wallet" && (
+      <h2 style={{
+        color: "#7CFFB2"
+      }}>
+        {categoryData[0]?.name || "No Data"}
+      </h2>
 
-          <div style={{
-            marginTop: "30px"
-          }}>
+    </div>
 
-            <div style={mainCard}>
-              <h2>Wallet</h2>
+  </div>
 
-              <p style={{
-                color: "#9ca3af",
-                marginTop: "20px"
-              }}>
-                Investments
-              </p>
-
-              <h1 style={{
-                color: "#7CFFB2"
-              }}>
-                ₹ 2,40,000
-              </h1>
-            </div>
-
-            <div style={smallCard}>
-              <h3>EMI Due</h3>
-              <h2>₹ 25,000</h2>
-            </div>
-
-          </div>
-
-        )}
+)}
 
       </div>
 
