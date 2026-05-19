@@ -243,6 +243,38 @@ export default function App() {
       : total < 70000
       ? "Good"
       : "Needs Attention";
+  const monthlyInvestment =
+  investments.reduce(
+    (sum, item) =>
+      sum + Number(item.amount),
+    0
+  );
+
+const monthlyEmi =
+  emis.reduce(
+    (sum, item) =>
+      sum + Number(item.amount),
+    0
+  );
+
+const estimatedSavings =
+  monthlyInvestment -
+  monthlyEmi -
+  total;
+
+const yearlyProjection =
+  estimatedSavings * 12;
+
+const fiveYearProjection =
+  yearlyProjection * 5;
+
+const projectedWealth =
+  monthlyInvestment * 12 * 5;
+
+const financialScore =
+  estimatedSavings > 0
+    ? 82
+    : 45;
 
   const today = new Date();
 
@@ -529,6 +561,129 @@ export default function App() {
               </p>
 
             </div>
+            <div style={{
+  background: "#111827",
+  borderRadius: "30px",
+  padding: "25px",
+  marginTop: "25px"
+}}>
+
+  <h2 style={{
+    color: "#7CFFB2"
+  }}>
+    Wealth Forecasting
+  </h2>
+
+  <div style={{
+    marginTop: "20px"
+  }}>
+
+    <p style={{
+      color: "#9ca3af"
+    }}>
+      Estimated Monthly Savings
+    </p>
+
+    <h1 style={{
+      color: "#7CFFB2"
+    }}>
+      ₹ {estimatedSavings}
+    </h1>
+
+  </div>
+
+  <div style={{
+    marginTop: "20px"
+  }}>
+
+    <p style={{
+      color: "#9ca3af"
+    }}>
+      1 Year Wealth Projection
+    </p>
+
+    <h2>
+      ₹ {yearlyProjection}
+    </h2>
+
+  </div>
+
+  <div style={{
+    marginTop: "20px"
+  }}>
+
+    <p style={{
+      color: "#9ca3af"
+    }}>
+      5 Year Projection
+    </p>
+
+    <h2>
+      ₹ {fiveYearProjection}
+    </h2>
+
+  </div>
+
+  <div style={{
+    marginTop: "20px"
+  }}>
+
+    <p style={{
+      color: "#9ca3af"
+    }}>
+      Investment Growth Forecast
+    </p>
+
+    <h2 style={{
+      color: "#60A5FA"
+    }}>
+      ₹ {projectedWealth}
+    </h2>
+
+  </div>
+
+  <div style={{
+    marginTop: "25px"
+  }}>
+
+    <p style={{
+      color: "#9ca3af"
+    }}>
+      AI Financial Score
+    </p>
+
+    <div style={{
+      background: "#1f2937",
+      height: "14px",
+      borderRadius: "20px",
+      marginTop: "10px",
+      overflow: "hidden"
+    }}>
+
+      <div style={{
+        width: `${financialScore}%`,
+        height: "100%",
+        background:
+          financialScore > 70
+            ? "#7CFFB2"
+            : "#ef4444"
+      }} />
+
+    </div>
+
+    <h3 style={{
+      marginTop: "10px",
+      color:
+        financialScore > 70
+          ? "#7CFFB2"
+          : "#ef4444"
+    }}>
+      {financialScore}/100
+    </h3>
+
+  </div>
+
+</div>
 
             <div style={{
               background: "#111827",
