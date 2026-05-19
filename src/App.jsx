@@ -36,6 +36,11 @@ export default function App() {
   const [emiName, setEmiName] = useState("");
   const [emiAmount, setEmiAmount] = useState("");
   const [emiDate, setEmiDate] = useState("");
+  const [investments, setInvestments] = useState([]);
+
+const [investmentName, setInvestmentName] = useState("");
+const [investmentAmount, setInvestmentAmount] = useState("");
+const [investmentType, setInvestmentType] = useState("Mutual Fund");
 
   useEffect(() => {
 
@@ -94,7 +99,25 @@ export default function App() {
     setEmiAmount("");
     setEmiDate("");
   };
+const addInvestment = () => {
 
+  if (!investmentName || !investmentAmount) return;
+
+  const newInvestment = {
+    id: Date.now(),
+    name: investmentName,
+    amount: investmentAmount,
+    type: investmentType
+  };
+
+  setInvestments([
+    ...investments,
+    newInvestment
+  ]);
+
+  setInvestmentName("");
+  setInvestmentAmount("");
+};
   const total = expenses.reduce(
     (sum, item) => sum + item.amount,
     0
@@ -434,6 +457,138 @@ export default function App() {
           </div>
 
         )}
+        {/* INVESTMENTS */}
+
+<div style={{
+  marginTop: "30px"
+}}>
+
+  <div style={mainCard}>
+
+    <h2>Investment Portfolio</h2>
+
+    <p style={{
+      color: "#9ca3af",
+      marginTop: "15px"
+    }}>
+      Total Investments
+    </p>
+
+    <h1 style={{
+      color: "#7CFFB2"
+    }}>
+      ₹ {
+        investments.reduce(
+          (sum, item) =>
+            sum + Number(item.amount),
+          0
+        )
+      }
+    </h1>
+
+  </div>
+
+  {/* ADD INVESTMENT */}
+
+  <div style={{
+    background: "#111827",
+    borderRadius: "30px",
+    padding: "25px",
+    marginTop: "25px"
+  }}>
+
+    <h2>Add Investment</h2>
+
+    <input
+      placeholder="Investment Name"
+      value={investmentName}
+      onChange={(e) =>
+        setInvestmentName(e.target.value)
+      }
+      style={inputStyle}
+    />
+
+    <input
+      placeholder="Investment Amount"
+      type="number"
+      value={investmentAmount}
+      onChange={(e) =>
+        setInvestmentAmount(e.target.value)
+      }
+      style={inputStyle}
+    />
+
+    <select
+      value={investmentType}
+      onChange={(e) =>
+        setInvestmentType(e.target.value)
+      }
+      style={inputStyle}
+    >
+      <option>Mutual Fund</option>
+      <option>Stocks</option>
+      <option>Gold</option>
+      <option>Crypto</option>
+      <option>SIP</option>
+    </select>
+
+    <button
+      onClick={addInvestment}
+      style={buttonStyle}
+    >
+      Add Investment
+    </button>
+
+  </div>
+
+  {/* INVESTMENT LIST */}
+
+  <div style={{
+    marginTop: "25px"
+  }}>
+
+    <h2>Portfolio</h2>
+
+    {investments.map(item => (
+
+      <div
+        key={item.id}
+        style={{
+          background: "#111827",
+          padding: "20px",
+          borderRadius: "25px",
+          marginTop: "15px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        }}
+      >
+
+        <div>
+
+          <h3>{item.name}</h3>
+
+          <p style={{
+            color: "#9ca3af"
+          }}>
+            {item.type}
+          </p>
+
+        </div>
+
+        <h2 style={{
+          color: "#7CFFB2"
+        }}>
+          ₹ {item.amount}
+        </h2>
+
+      </div>
+
+    ))}
+
+  </div>
+
+</div>
 
       </div>
 
