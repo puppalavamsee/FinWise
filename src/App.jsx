@@ -164,6 +164,24 @@ const financialHealth =
     : total < 70000
     ? "Good"
     : "Needs Attention";
+    const today = new Date();
+
+const upcomingEmis = emis.filter(item => {
+
+  const emiDateObj = new Date(item.date);
+
+  const diffTime =
+    emiDateObj - today;
+
+  const diffDays =
+    Math.ceil(
+      diffTime /
+      (1000 * 60 * 60 * 24)
+    );
+
+  return diffDays <= 7;
+
+});
   const COLORS = [
     "#7CFFB2",
     "#60A5FA",
@@ -496,6 +514,67 @@ const financialHealth =
               </h1>
 
             </div>
+            <div style={{
+  background: "#111827",
+  borderRadius: "30px",
+  padding: "25px",
+  marginTop: "25px"
+}}>
+
+  <h2 style={{
+    color: "#FBBF24",
+    marginBottom: "20px"
+  }}>
+    Upcoming Reminders
+  </h2>
+
+  {upcomingEmis.length === 0 ? (
+
+    <p style={{
+      color: "#9ca3af"
+    }}>
+      No upcoming EMI reminders.
+    </p>
+
+  ) : (
+
+    upcomingEmis.map(item => (
+
+      <div
+        key={item.id}
+        style={{
+          background: "#1f2937",
+          borderRadius: "20px",
+          padding: "18px",
+          marginTop: "15px"
+        }}
+      >
+
+        <h3>
+          {item.name}
+        </h3>
+
+        <p style={{
+          color: "#9ca3af",
+          marginTop: "8px"
+        }}>
+          Due on {item.date}
+        </p>
+
+        <h2 style={{
+          color: "#FBBF24",
+          marginTop: "10px"
+        }}>
+          ₹ {item.amount}
+        </h2>
+
+      </div>
+
+    ))
+
+  )}
+
+</div>
 
             <div style={{
               background: "#111827",
