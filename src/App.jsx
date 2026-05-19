@@ -36,6 +36,9 @@ export default function App() {
   const [amount, setAmount] = useState("");
   const [member, setMember] = useState("Vamsee");
   const [category, setCategory] = useState("Food");
+  const [isRecurring, setIsRecurring] = useState(false);
+
+const [recurringExpenses, setRecurringExpenses] = useState([]);
 
   const [emis, setEmis] = useState([]);
   const [emiName, setEmiName] = useState("");
@@ -115,6 +118,23 @@ const [investmentType, setInvestmentType] = useState("Mutual Fund");
         createdAt: new Date()
       }
     );
+    if (isRecurring) {
+
+  const recurringItem = {
+    title,
+    amount: Number(amount),
+    member,
+    category,
+    recurring: true,
+    createdAt: new Date()
+  };
+
+  setRecurringExpenses([
+    ...recurringExpenses,
+    recurringItem
+  ]);
+
+}
 
     setTitle("");
     setAmount("");
@@ -612,8 +632,29 @@ const exportPDF = () => {
             </button>
 
           </div>
+          
 
         )}
+        <div style={{
+  marginTop: "20px",
+  display: "flex",
+  alignItems: "center",
+  gap: "10px"
+}}>
+
+  <input
+    type="checkbox"
+    checked={isRecurring}
+    onChange={() =>
+      setIsRecurring(!isRecurring)
+    }
+  />
+
+  <label>
+    Monthly Recurring Expense
+  </label>
+
+</div>
 
         {/* EMI */}
 
@@ -882,6 +923,71 @@ const exportPDF = () => {
     ))}
 
   </div>
+
+</div>
+<div style={{
+  marginTop: "30px"
+}}>
+
+  <div style={mainCard}>
+
+    <h2>Recurring Transactions</h2>
+
+    <p style={{
+      color: "#9ca3af",
+      marginTop: "10px"
+    }}>
+      Automatic Monthly Entries
+    </p>
+
+  </div>
+
+  {recurringExpenses.map((item, index) => (
+
+    <div
+      key={index}
+      style={{
+        background: "#111827",
+        padding: "20px",
+        borderRadius: "25px",
+        marginTop: "15px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center"
+      }}
+    >
+
+      <div>
+
+        <h3>{item.title}</h3>
+
+        <p style={{
+          color: "#9ca3af"
+        }}>
+          {item.category}
+        </p>
+
+      </div>
+
+      <div>
+
+        <h2 style={{
+          color: "#7CFFB2"
+        }}>
+          ₹ {item.amount}
+        </h2>
+
+        <p style={{
+          color: "#60A5FA"
+        }}>
+          Monthly
+        </p>
+
+      </div>
+
+    </div>
+
+  ))}
 
 </div>
 
